@@ -17,8 +17,8 @@ public partial class BlogdbContext : DbContext
 
     public virtual DbSet<Post> Posts { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql("dbConnection");
+    // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //     => optionsBuilder.UseNpgsql("dbConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
