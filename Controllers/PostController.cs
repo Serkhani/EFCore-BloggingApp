@@ -2,7 +2,6 @@
 
 using EFCore_BloggingApp.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,65 +9,68 @@ public class PostController : ControllerBase
 {
 
     private readonly BlogdbContext _context;
+    PostManager postManager;
 
     public PostController(BlogdbContext context)
     {
         _context = context;
+        postManager = new PostManager(_context);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetPosts()
     {
-        var tasks = await _context.Posts.ToListAsync();
-        if (tasks == null)
-        {
-            return NoContent();
-        }
+        var tasks = await postManager.GetAllPosts();
         return Ok(tasks);
     }
 
     [HttpGet("{PostId:int}")]
-public async Task<IActionResult> GetPost(int PostId)
-{
-    var task = await _context.Posts.FindAsync(PostId);
-    if (task == null)
+    public async Task<IActionResult> GetPost(int PostId)
     {
-        return NotFound();
+        try
+        {
+            var task = await postManager.GetPost(PostId);
+            return Ok(task);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
-    return Ok(task);
-}
 
     [HttpPost]
     public async Task<IActionResult> CreatePost(Post post)
     {
-        _context.Posts.Add(post);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetPost), new { PostId = post.Postid }, post);
+        var postId = await postManager.CreatePost(post);
+        return CreatedAtAction(nameof(GetPost), new { PostId = postId }, post);
     }
 
     [HttpPatch]
-    public async Task<IActionResult> UpdatePost(int PostId, Post post)
+    public async Task<IActionResult> UpdatePost(int PostId, Post updatedPost)
     {
-        if (PostId != post.Postid)
+        try
         {
-            return BadRequest();
+            await postManager.UpdatePost(PostId, updatedPost);
+            return NoContent();
         }
-        _context.Entry(post).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-        return NoContent();
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     [HttpDelete]
     public async Task<IActionResult> DeletePost(int PostId)
     {
-        var post = await _context.Posts.FindAsync(PostId);
-        if (post == null)
-        {
-            return NotFound();
-        }
-        _context.Posts.Remove(post);
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+            {
+                await postManager.DeletePost(PostId);
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
     }
 
 }
