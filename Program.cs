@@ -1,14 +1,27 @@
+using System.Text.Json.Serialization;
+using EFCore_BloggingApp.Controllers;
 using EFCore_BloggingApp.Models;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers();
+
+builder.Services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<BlogdbContext>();
+// builder.Services.AddDbContext<BlogdbContext>();
+
+builder.Services.AddEntityFrameworkNpgsql().AddDbContext<BlogdbContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("dbConnection")));
+
 
 var app = builder.Build();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -17,10 +30,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
 
-// app.UseHttpsRedirection();
-// app.MapControllers();
+app.UseHttpsRedirection();
+app.MapControllers();
 app.Run();
 
 // var summaries = new[]
