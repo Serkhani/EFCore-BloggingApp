@@ -1,4 +1,4 @@
-namespace EFCore_BloggingAppTests;
+namespace tests;
 
 public class UnitTest1
 {
